@@ -1,5 +1,32 @@
 Revision history for Perl extension Net::IRCService.
 
+0.11 Wed Sep 24 13:03:17 CEST 2003
+
+ o IRCService.pm
+   - Timers are now executed in correct order ( Thanks to Jonas Liljegren )
+
+0.11 Mon Aug  4 00:32:16 CEST 2003
+   (On a train between Moss and Oslo)
+ o DB.pm
+   - Removed a dummy-sub. (&_event_ping)
+
+0.11 Thu Jul 31 22:36:34 CEST 2003
+ o IRCService.pm
+   - Converted from die to croak. (use Carp)
+ o README
+   - Added Carp to the requested module-list
+ o Makefile.PL
+   - Added Carp to the requested module-list
+
+0.11 Wed Jul 30 10:58:59 CEST 2003
+ o demo/tsfuuk.pl
+   - Fixed a bug. I forgot the &main_loop
+ o DB.pm
+   - Spelling
+ o IRCService.pm
+   - Dont accept new connecting when allready connected.
+   - Added a simple High Traffic Mode thingy.
+
 0.10 Mon Jul 28 14:12:11 CEST 2003
  o NEW RELEASE
    - Removed Output.pm from MANIFEST
@@ -7,7 +34,7 @@ Revision history for Perl extension Net::IRCService.
 
 0.10 Fri Jul 25 09:38:04 CEST 2003
  o README
-   - Updated the TODO lit. Added the planned Interface.pm part.
+   - Updated the TODO list. Added the planned Interface.pm part.
 
  o IRCService.pm / Hybrid6.pm
    - Added EVENT_KNOCK to parse KNOCK requests.

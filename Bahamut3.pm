@@ -17,7 +17,13 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-
+#
+# !NB!
+# !NB! I will no longer support the bahamut ircd in Net::IRCService.
+# !NB! If you find a bug or something, send a patch!
+# !NB!
+#
+#
 #
 # "Mental note":
 #

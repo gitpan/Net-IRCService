@@ -91,7 +91,7 @@ sub event_privmsg {
 }
 
 
-
+&main_loop;
 	    
 	    
 

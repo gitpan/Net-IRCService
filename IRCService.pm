@@ -91,7 +91,9 @@ our @EXPORT = qw(
 	EVENT_SVSKILL
 	EVENT_KNOCKLL
 	EVENT_KNOCK
+        EVENT_EOB
 
+	
 	EVENT_END
 	EVENT_DEBUG
 	EVENT_INIT
@@ -111,7 +113,7 @@ our @EXPORT = qw(
 
 );
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 # Preloaded methods go here.
 
@@ -145,6 +147,11 @@ our $gid=getgrnam("nobody");
 
 
 my $STOP_SIGNAL = 0;
+
+my $htm = 0;
+my $htm_on = 0.1;
+my $htm_off = 0.5;
+my $htm_size = 0;
 # <--------------------------------------------------
 
 ## Signaler!
@@ -185,6 +192,8 @@ sub EVENT_GLOBOPS	{ 310; } # Bahamut3
 sub EVENT_KNOCKLL	{ 320; } # Hybrid7
 sub EVENT_OPERWALL	{ 330; } # Hybrid6, Hybrid7
 sub EVENT_KNOCK		{ 340; } # Hybrid6
+sub EVENT_EOB		{ 350; } # Ratbox
+
 
 sub EVENT_END			{ 5000; }
 sub EVENT_DEBUG			{ 5010; }
@@ -207,7 +216,7 @@ sub EVENT_UNKNOWN		{ 5140; }
 
 BEGIN {
         # Load needed modules, and trap the error if something is missing.
-        foreach my $mod (qw(POSIX IO::Select IO::Socket Socket Fcntl) ) {
+        foreach my $mod (qw(POSIX IO::Select IO::Socket Socket Fcntl Carp) ) {
                 eval "use ${mod};";
 		die "Couldn't load $mod (not installed?)\n" if ($@ ne '');
         }
@@ -225,7 +234,7 @@ sub init_service {
 
 	my %args=@_;
 
-	die "Needs a SERVER_NAME!\n" if (!defined($args{SERVER_NAME}));
+	croak "Needs a SERVER_NAME!\n" if (!defined($args{SERVER_NAME}));
 
 	$server_name = $args{SERVER_NAME};
 	$server_comment = $args{COMMENT} if (defined($args{COMMENT}));
@@ -245,7 +254,7 @@ sub init_service {
 	} elsif ($server_proto =~ /^hybrid7$/i) {
 		require "Net/IRCService/Hybrid7.pm";
 	} else {
-		die "Unknown IRCD protocol! ($server_proto)\n";
+		croak "Unknown IRCD protocol! ($server_proto)\n";
 	}
 
 	if ($<==0) {
@@ -264,13 +273,13 @@ sub init_service {
                                         LocalAddr => $server_addr,
                                         Listen    => 1,
                                         Reuse     => 1)
-	        or die "Cant make server: $@\n";
+	        or croak "Cant make server: $@\n";
 
 	$select=IO::Select->new($server);
 
-	my $flags = fcntl($server, F_GETFL, 0) or die "Can't get flag... $!\n";
+	my $flags = fcntl($server, F_GETFL, 0) or croak "Can't get flag... $!\n";
 	
-	fcntl($server, F_SETFL, $flags | O_NONBLOCK) or die "Can't make socket nonblocking: $!\n";
+	fcntl($server, F_SETFL, $flags | O_NONBLOCK) or croak "Can't make socket nonblocking: $!\n";
 
 	&send_event(EVENT_INIT, '');
 	&send_event(EVENT_DEBUG, 'Init done...');
@@ -332,7 +341,7 @@ sub irc_send_now {
 	$data.="\r\n";
 
 	while (length($data)) {
-		foreach $socket ($select->can_write(1)) {
+		foreach $socket ($select->can_write(0)) {
 			while (length($data)>0) {
 				$rv = $socket->send($data, 0);	
 				substr($data,0,$rv)='';
@@ -366,13 +375,19 @@ sub do_one_loop {
                         
                 if ($client == $server) {
                         $client=$server->accept();
+                        if ($connected) {
+                            $client->close();
+                            &send_event(EVENT_INT_ERROR, 'Closing new connection. Allready connected.');
+                            next;
+                        }
+																			    
                         $select->add($client);
-			my $flags = fcntl($client, F_GETFL, 0) or die "Can't get flag... $!\n";	
-			fcntl($client, F_SETFL, $flags | O_NONBLOCK) or die "Can't make socket nonblocking: $!\n";
+			my $flags = fcntl($client, F_GETFL, 0) or croak "Can't get flag... $!\n";	
+			fcntl($client, F_SETFL, $flags | O_NONBLOCK) or croak "Can't make socket nonblocking: $!\n";
                         $status=1;
 			$connected=1;
 
-			my $oe=getpeername($client) or die ("Coundn't do getpeername");
+			my $oe=getpeername($client) or croak ("Coundn't do getpeername");
 			my $ip_addr = inet_ntoa((unpack_sockaddr_in($oe))[1]);
 
 			&send_event(EVENT_DEBUG, 'do_one_loop: clientserver connected...');
@@ -395,6 +410,8 @@ sub do_one_loop {
 
                                 next;
                         }
+
+			$htm_size += length $data;
                  
                         $inbuffer.=$data;
 
@@ -424,6 +441,8 @@ sub do_one_loop {
                         next;
                 }
 
+		$htm_size += $rv;
+
 		&send_event(EVENT_RAW_OUT, $_) foreach split ("\r\n", $outbuffer);
 
                         
@@ -441,14 +460,26 @@ sub do_one_loop {
                 }
                         
         }
+
+	if (($htm_size > 1000) && (!$htm)) {
+	   $htm = time + 20;
+	}
+	$htm_size = 0;
 }
 
 sub main_loop {
 	while (1) {
-		select(undef,undef,undef, 0.2);
+	        if ((time > $htm) && ($htm != 0)) {
+		   $htm = 0;
+	        }
+		if ($htm) {
+		  select(undef,undef,undef, $htm_on);
+	        } else {
+		  select(undef,undef,undef, $htm_off);
+	        }
 		&do_one_loop;
 		&send_event(EVENT_DO_ONE_LOOP, '');
-		foreach (keys %timers) {
+		foreach (sort keys %timers) {
 			if (time >= $timers{$_}{timeout}) {
 				&{ $timers{$_}{sub} };
 				del_timer($_);

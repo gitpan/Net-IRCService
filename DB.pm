@@ -24,7 +24,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 my (%users, %channels, %servers);
 
@@ -50,8 +50,6 @@ sub init {
    &Net::IRCService::add_event_handler(Net::IRCService::EVENT_PART, \&Net::IRCService::DB::_event_part);
    &Net::IRCService::add_event_handler(Net::IRCService::EVENT_KICK, \&Net::IRCService::DB::_event_kick);
    
-   &Net::IRCService::add_event_handler(Net::IRCService::EVENT_PING, \&Net::IRCService::DB::_event_ping);
-
    &Net::IRCService::add_event_handler(Net::IRCService::EVENT_MODE, \&Net::IRCService::DB::_event_mode);
    
    &Net::IRCService::add_event_handler(Net::IRCService::EVENT_SNICK, \&Net::IRCService::DB::_event_snick);
@@ -122,7 +120,7 @@ sub _event_sjoin {
       my $voice = ($lc_nick =~ s/\+// ? 1 : 0);
 	 
       # Første bokstaven i et nick er en bokstav, sørg for at det ikke er noe fremmedlegmer før det.
-      # (Remove modes that I dont understand. (A nick starts with a alphachar)
+      # (Remove modes that I dont understand. (A nick starts with a alphachar))
       $lc_nick =~ s/^[^a-z]+//i;
 
       $channels{"$lc_chan"}{'users'}{"$lc_nick"}{'op'}= $op;
@@ -322,10 +320,6 @@ sub _event_snick {
    $users{'.users'}++;
 }
 
-sub _event_ping {
-   # Dummy ?!
-}
-
 sub _lc {
    my $nick = shift;
    $nick =~ tr/[]\\/{}|/;
@@ -428,6 +422,35 @@ sub channel_list {
    }
    return @l;
 }
+
+sub key {
+   my $self = shift;
+   my $lc_chan = lc(shift);
+   my $from = _lc(shift);
+   my $key = shift;
+   if (defined($key)) {
+      $channels{"$lc_chan"}{'key'}=$key;
+      &Net::IRCService::ircsend(":$from MODE $lc_chan +k $key");
+   }
+   return $channels{"$lc_chan"}{'key'};
+}
+
+sub limit {
+   my ($self, $channel, $from, $limit) = @_;
+   $lc_chan = lc($lc_chan);
+   if (defined($limit)) {
+      $channels{"$lc_chan"}{'limit'}=$limit;
+      &Net::IRCService::ircsend(":$from MODE $lc_chan +l $limit");
+   }
+   return $channels{"$lc_chan"}{'limit'};
+}
+
+sub mode {
+   my $self=shift;
+   my $channel = shift;
+   my $from = shift;
+   my $mode = shift;
+   my $modes = @_;
 
 sub channel_get_ts {
    my $self = shift;

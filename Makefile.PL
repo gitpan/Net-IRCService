@@ -1,12 +1,13 @@
 use ExtUtils::MakeMaker;
 
 #
-# Found in a norwegian book about Internet Relay Chat (Internet Relay Chat - IRC by Lars M. Kvanum,
-# ISBN 0-13-271164-8, Prentice Hall):
+# Found in a norwegian book about IRC 
+#     (Internet Relay Chat - IRC by Lars M. Kvanum,
+#      ISBN 0-13-271164-8, Prentice Hall):
 #
 # RTFM means: Here, "Sir; Let Me Do This For You, Sir (Military)"
 #
-
+#
 # So, You want a Makefile?! RTFM!
 
 
@@ -26,7 +27,8 @@ WriteMakefile(
 		'IO::Select'	=> 0,
 		'IO::Socket'	=> 0,
 		'Socket'	=> 0,
-		'Fcntl'		=> 0
+		'Fcntl'		=> 0,
+		'Carp'	        => 0
 			},
 	'dist' => { 'COMPRESS' => 'gzip --best' },
 	($] >= 5.005 ? (

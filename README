@@ -43,15 +43,18 @@ This module requires these other modules and libraries:
 	o IO::Socket
 	o Socket
 	o Fcntl
+	o Carp
 		(All found in the standard perl suit)
 
 BUGS
 
-If you find any bugs, please send a mail to me about it. If you know how 
+If you find any bugs, please use RT to report it. If you know how 
 to fix it, send me a patch.
 
 If you want to add support for any other ircd, please do so. I dont think
-I will add any other protocols unless -I- need it.
+I will add any other protocols unless -I- need it. (Nextthing to do here
+is to add support for ircd-ratbox, a hybrid-clone. http://www.ircd-ratbox.org
+
 
 TODO
 
