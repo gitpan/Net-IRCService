@@ -1,4 +1,4 @@
-Net/IRCService version 0.02
+Net/IRCService version 0.10
 ============================
 
 
@@ -15,14 +15,18 @@ Im sure there are some bugs yet to be found, so please dont put it right
 in to a production network without testing it first.
 
 This module was devloped out from my experience from hybrid6/7 and
-bahamut, and is know to work (atlast connect to, and stay connected when
+bahamut, and is know to work (atleast connect to, and stay connected when
 idle) with following versions:
 
-	o ircd-hybrid-6.3.1
+	o <= ircd-hybrid-6.4 
 	o ircd-hybrid-7rc8
 	o bahamut-1.4.33	
 
-INSTALLATION
+(Im only testing on hybrid6.4 at the moment. No more bahamut support will
+come from me, since Im not a Criten staffmember anymore. (Maybe a DALnet
+server needs a new staffmember? :P j/k))
+
+INSTALL
 
 To install this module type the following:
 
@@ -51,33 +55,37 @@ I will add any other protocols unless -I- need it.
 
 TODO
 
-	o Add some kind of user/cannel/server handling. 
+	o Add some kind of user/cannel/server handling. (In progress, see DB.pm)
 
-		o HasOp(channel, nick)
-		o IsOper(nick)
-		o ChanMembers(channel)
+		o HasOp(channel, nick) ( --"-- )
+		o IsOper(nick) ( --"-- )
+		o ChanMembers(channel) ( --"-- )
 
 		  ... and so on.
 
 	o Make some tools to make life abit easyer;
 
-		o Give(Op|Voice), Take(Op|Voice), nickmode, chanmode, settopic, add/delban
+		o Give(Op|Voice), Take(Op|Voice), nickmode, chanmode, settopic, add/delban (In progress, see DB.pm)
 		o ForbidChannel, ForbidNickname, CloseChannel, ClearChannel, and so on
 		o Database interface (DBI to mysql, posgres, oracle, DBD) ?
 		o DCC module
-		o Command handling. (Commands from users on IRC ??troh?? PRIVMSG or NOTICE)
+		o Command handling. (Commands from users on IRC through PRIVMSG or NOTICE)
+
+        o Start on Interface.pm
+
+	        o MOTD, ADMIN, STATS, KLINE, ENCAP, WHOIS, PRIVMSG etc interface.
 
 
 DISCLAMER
 
 Yes, I know, my english sucks. :) But, Im doing my werry best, so I really
 dont care. (I think you will understand everything if you try). Feel free
-to correct my mnglish and send your version to me.
+to correct my mnglish and send me your version.
 
 
 COPYRIGHT AND LICENCE
 
- © Copyright (C) 2002 Kay Sindre Baerulfsen
+ Copyright 2003 Kay Sindre Baerulfsen
 
 This library is free software; you can redistribute it and/or modify
 it under the GNU General Public License (Version 2, June 1991)

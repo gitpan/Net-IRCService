@@ -35,9 +35,9 @@ our %protocol=(
 	SERVER  => [0, 4, EVENT_SERVER, '^(?::(.*?) |)SERVER (.*?) (\d+) :(.*?)$'],
 
         #define MSG_TOPIC    "TOPIC"    /* TOPI */
-	# Hybnet dosnt send any TOPIC burst at connect. So the S_TOPIC will be unused. 
+	# Hybrid dosnt send any TOPIC burst at connect. So the S_TOPIC will be unused. 
         S_TOPIC => [0, 0, EVENT_STOPIC,  '^unused$'],
-        C_TOPIC => [0, 3, ECENT_CTOPIC,  '^:(.*?) TOPIC ([^ ]+) :(.*?)$'],
+        C_TOPIC => [0, 3, EVENT_CTOPIC,  '^:(.*?) TOPIC ([^ ]+) :(.*?)$'],
 
         #define MSG_INVITE   "INVITE"   /* INVI */
         INVITE  => [0, 3, EVENT_INVITE, '^:(.*?) INVITE (.*?) :(.*?)$'],
@@ -49,7 +49,7 @@ our %protocol=(
         QUIT    => [0, 2, EVENT_QUIT,   '^:(.*?) QUIT :(.*?)$'],
 
         #define MSG_SQUIT    "SQUIT"    /* SQUI */
-        SQUIT   => [0, 2, EVENT_SQUIT,  '^SQUIT (.*?) :(.*?)$'],
+        SQUIT   => [0, 3, EVENT_SQUIT,  '^:?(.*?)? ?SQUIT (.*?) :(.*?)$'],
 
         #define MSG_KILL     "KILL"     /* KILL */
         KILL    => [0, 4, EVENT_KILL,   '^:(.*?) KILL (.*?) :(.*?) \((.*?)\)$'],
@@ -71,6 +71,7 @@ our %protocol=(
 
         #define MSG_WALLOPS  "WALLOPS"  /* WALL */
         WALLOPS => [0, 2, EVENT_WALLOPS,'^:(.*?) WALLOPS :(.*?)$'],
+	OPERWALL=> [0, 2, EVENT_OPERWALL,'^:(.*?) OPERWALL :(.*?)$'],
 
         #define MSG_ADMIN    "ADMIN"    /* ADMI */
         ADMIN   => [0, 2, EVENT_ADMIN,  '^:(.*?) ADMIN :(.*?)$'],

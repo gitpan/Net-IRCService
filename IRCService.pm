@@ -2,7 +2,7 @@ package Net::IRCService;
 
 #
 # Net::IRCService
-# Copyright (C) 2001  Kay Sindre Baerulfsen
+# Copyright (C) 2003  Kay Sindre Baerulfsen
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,6 +35,8 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = qw(
 
+	&ircsend
+
 	&init_service
 	&close_connection
 	&add_event_handler
@@ -49,6 +51,9 @@ our @EXPORT = qw(
 	&irc_send_now
 
 	&send_whois
+
+	%remote_capab
+	%our_capab
 
 	EVENT_PRIVMSG
 	EVENT_WHOIS
@@ -69,6 +74,7 @@ our @EXPORT = qw(
 	EVENT_PONG
 	EVENT_PASS
 	EVENT_WALLOPS
+	EVENT_OPERWALL
 	EVENT_ADMIN
 	EVENT_NOTICE
 	EVENT_GNOTICE
@@ -84,6 +90,7 @@ our @EXPORT = qw(
 	EVENT_RAKILL
 	EVENT_SVSKILL
 	EVENT_KNOCKLL
+	EVENT_KNOCK
 
 	EVENT_END
 	EVENT_DEBUG
@@ -104,7 +111,7 @@ our @EXPORT = qw(
 
 );
 
-our $VERSION = '0.02';
+our $VERSION = '0.10';
 
 # Preloaded methods go here.
 
@@ -122,6 +129,8 @@ our $server_passwd;
 our $server_capab='TS3';
 our $server_proto='Bahamut3';
 our $DELTA = 0;
+our %our_capab;
+our %remote_capab;
 
 our @ready;
 our $inbuffer = '';
@@ -174,6 +183,8 @@ sub EVENT_RAKILL        { 290; } # Bahamut3
 sub EVENT_SVSKILL	{ 300; } # Bahamut3
 sub EVENT_GLOBOPS	{ 310; } # Bahamut3
 sub EVENT_KNOCKLL	{ 320; } # Hybrid7
+sub EVENT_OPERWALL	{ 330; } # Hybrid6, Hybrid7
+sub EVENT_KNOCK		{ 340; } # Hybrid6
 
 sub EVENT_END			{ 5000; }
 sub EVENT_DEBUG			{ 5010; }
@@ -222,6 +233,9 @@ sub init_service {
 	$server_port = $args{LOCALPORT} if (defined($args{LOCALPORT}));
 	$server_passwd = $args{PASSWORD} if (defined($args{PASSWORD}));
 	$server_capab = $args{CAPAB} if (defined($args{CAPAB}));
+	foreach (split(' ', $server_capab)) {
+	   $our_capab{$_}=1;
+	 }
 	$server_proto = $args{PROTOCOL} if (defined($args{PROTOCOL}));
 
 	if ($server_proto =~ /^bahamut3$/i) {
@@ -276,18 +290,32 @@ sub add_event_handler {
 
 sub irc_send {
 	my $data=shift;
-
 	if (!$connected) {
 		&send_event(EVENT_INT_ERROR, 'irc_send: not connected to irc server!\n');
 		return 0;
 	}
 
-	$data=~ s/[\r\n]//g;
+	$data=~ s/[\r\n]$//g;
 	$outbuffer.=$data."\r\n";
 
 	&send_event(EVENT_SEND, $data);
 	$STOP_SIGNAL=0;
 }
+
+sub ircsend {
+	my $data=shift;
+	if (!$connected) {
+		&send_event(EVENT_INT_ERROR, 'irc_send: not connected to irc server!\n');
+		return 0;
+	}
+
+	$data=~ s/[\r\n]$//g;
+	$outbuffer.=$data."\r\n";
+
+	&send_event(EVENT_SEND, $data);
+	$STOP_SIGNAL=0;
+}
+
 
 sub irc_send_now {
 	if (!$connected) {
@@ -321,14 +349,12 @@ sub irc_send_now {
 
 sub close_connection {
 	my $msg=shift;
-	my $client=shift;
 	&irc_send_now("ERROR :Closing Link: 0.0.0.0 $server_name (:$msg)");
 	@ready=();
 	$inbuffer='';
 	$outbuffer='';
-	$select->remove($client);
+	$server->close if $connected;
 	$status=0;
-	$client->close;
 	$connected=0;
 	&send_event(EVENT_DISCONNECTED, '');
 }
@@ -336,8 +362,7 @@ sub close_connection {
 sub do_one_loop {
 
 	my ($client, $rv, $data);
-
-        foreach $client ($select->can_read(1)) {
+        foreach $client ($select->can_read(0)) {
                         
                 if ($client == $server) {
                         $client=$server->accept();
@@ -353,7 +378,8 @@ sub do_one_loop {
 			&send_event(EVENT_DEBUG, 'do_one_loop: clientserver connected...');
 			&send_event(EVENT_CONNECTED, $ip_addr);
 
-                } else {                
+                } else {           
+		   
                         $data='';
                         $rv = $client->recv($data, POSIX::BUFSIZ, 0);
                         
@@ -381,19 +407,15 @@ sub do_one_loop {
 
         while (my $line=shift @ready) {
 		chomp($line);
-
 		if (($handle_pingpong == 1) && ($line =~ /^PING :(.*)$/)) {
 			&irc_send_now(":$server_name PONG :$1");
                 }        
-
 		if ($status<=2) {
 			handle_connect($line);
 		}
 		&parse_line($line);
         }
-
-        foreach $client ($select->can_write(1)) {
-		
+        foreach $client ($select->can_write(0)) {
                 next if (length($outbuffer) == 0);
                 
                 $rv = $client->send($outbuffer, 0);
@@ -419,8 +441,6 @@ sub do_one_loop {
                 }
                         
         }
-
-                                
 }
 
 sub main_loop {
@@ -428,14 +448,12 @@ sub main_loop {
 		select(undef,undef,undef, 0.2);
 		&do_one_loop;
 		&send_event(EVENT_DO_ONE_LOOP, '');
-
 		foreach (keys %timers) {
-			if (time > $timers{$_}{timeout}) {
+			if (time >= $timers{$_}{timeout}) {
 				&{ $timers{$_}{sub} };
 				del_timer($_);
 			}
 		}
-		
 	}
 }
 
@@ -444,8 +462,8 @@ sub add_timer {
 	my $sub = shift;
 	$timeout+=time;
 	$timers++;
-	$timers{$timers}{sub}=$sub;
-	$timers{$timers}{timeout}=$timeout;
+	$timers{"$timers"}{'sub'}=$sub;
+	$timers{"$timers"}{'timeout'}=$timeout;
 	return $timers;
 }
 
@@ -458,10 +476,9 @@ sub handle_connect {
         return if ($line =~ /${$protocol{NOTICE}}[3]/);
                         
         if ($line =~ /${$protocol{PASS}}[3]/) {
-         
                 if ($1 eq $server_passwd) {
 			&send_event(EVENT_GOT_PASSWORD, $1);
-                        &irc_send("PASS $server_passwd :TS");
+			&irc_send_now("PASS $server_passwd :TS");
                         return;
                 } else {
 			&send_event(EVENT_GOT_WRONG_PASSWORD, $1);
@@ -476,19 +493,22 @@ sub handle_connect {
                 }
 
         }
-
         if ($line =~ /${$protocol{CAPAB}}[3]/) {
-                &irc_send("CAPAB  $server_capab");
+	        if ($line =~ /^CAPAB :(.*?)$/) {
+		   foreach (split(' ', $1)) {
+		      $remote_capab{$_}=1;
+		   }
+	        }
+                &irc_send_now("CAPAB :$server_capab");
+		
                 return;
         }
-                
 
         if ($line =~ /${$protocol{SERVER}}[3]/) {
-		&irc_send("SERVER $server_name 1 :$server_comment");
+		&irc_send_now("SERVER $server_name 1 :$server_comment");
                 $status=2;
                 return;
         }
-
         if ($line =~ /${$protocol{SVINFO}}[3]/) {
 		$status=3;
                 if ($3==0) {
@@ -498,7 +518,7 @@ sub handle_connect {
                 }
 		&send_event(EVENT_DEBUG, "SVINFO: Time delta: $DELTA sec."); 
         }
-	                
+	             
 }
 
 
@@ -551,24 +571,59 @@ Net::IRCService - Perl extension for creating a irc services for:
 	LOCALPORT => 7110,
 	COMMENT => 'Services for network.no',
 	PROTOCOL => 'Hybrid6',
-	CAPAB => 'TS3');
+	CAPAB => 'QS EX');
 
   &main_loop;
 
 
 =head1 DESCRIPTION
 
+Net::IRCService is suposed to be a easy interface to create more or
+less usefull IRC-Services. If you have worked with Net::IRC before,
+you will fast get to grip on how this module works. It has -almost- the
+same event-driven interface. It lets you add one or more event handlers
+to EVENTS seen by the module.
 
-Stub documentation for Net::IRCService, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
+=head2 Functions
 
-Blah blah blah.
+=head3 init_service()
 
-=head2 EXPORT
+This functions prepares the module. This must be run before &do_one_loop and/or
+&main_loop.
 
-None by default.
+Parameters;
 
+   SERVER_NAME	  The server name. Must match the servernameyou use in the C/N's lines on the hub.
+   COMMENT	  This comment will show up in /links.
+   LOCALADDR	  The local ip/host to bind the server to.
+   LOCALPORT	  The local port to listen on.
+   PASSWORD	  The link password.
+   CAPAB	  The content of the CAPAB line. Read the ircd source to understand this.
+   PROTOCOL	  This tell the module witch protocol to use. (Hybrid6, Hybrid7 or Bahamut3).
+										       
+=head3 close_connection()
+
+Close the uplink connection with a message;
+
+   &close_connection("Something is wrong");
+
+&add_event_handler
+
+&do_one_loop
+&main_loop
+
+&add_timer
+&del_timer
+
+&irc_send
+&irc_send_now
+
+%remote_capab
+%our_capab
+
+
+												
+=head3 add_event_handler
 
 =head1 AUTHOR
 

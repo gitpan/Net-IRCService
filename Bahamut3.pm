@@ -50,7 +50,7 @@ our %protocol=(
         #define MSG_TOPIC    "TOPIC"    /* TOPI */
 	# Bahamut sends a TOPIC burst on connect. 
         S_TOPIC => [0, 5, EVENT_STOPIC,  '^:(.*?) TOPIC (.*?) (.*?) (\d+) :(.*?)$'],
-        C_TOPIC => [0, 3, ECENT_CTOPIC,  '^:(.*?) TOPIC ([^ ]+) :(.*?)$'],
+        C_TOPIC => [0, 3, EVENT_CTOPIC,  '^:(.*?) TOPIC ([^ ]+) :(.*?)$'],
 
         #define MSG_INVITE   "INVITE"   /* INVI */
         INVITE  => [0, 3, EVENT_INVITE, '^:(.*?) INVITE (.*?) :(.*?)$'],
@@ -62,7 +62,7 @@ our %protocol=(
         QUIT    => [0, 2, EVENT_QUIT,   '^:(.*?) QUIT :(.*?)$'],
 
         #define MSG_SQUIT    "SQUIT"    /* SQUI */
-        SQUIT   => [0, 2, EVENT_SQUIT,  '^SQUIT (.*?) :(.*?)$'],
+        SQUIT   => [0, 3, EVENT_SQUIT,  '^:?(.*?)? ?SQUIT (.*?) :(.*?)$'],
 
         #define MSG_KILL     "KILL"     /* KILL */
         KILL    => [0, 4, EVENT_KILL,   '^:(.*?) KILL (.*?) :(.*?) \((.*?)\)$'],

@@ -1,5 +1,83 @@
 Revision history for Perl extension Net::IRCService.
 
+0.10 Mon Jul 28 14:12:11 CEST 2003
+ o NEW RELEASE
+   - Removed Output.pm from MANIFEST
+   - Updated to CPAN/PAUSE.
+
+0.10 Fri Jul 25 09:38:04 CEST 2003
+ o README
+   - Updated the TODO lit. Added the planned Interface.pm part.
+
+ o IRCService.pm / Hybrid6.pm
+   - Added EVENT_KNOCK to parse KNOCK requests.
+
+0.10 Thu Jul 24 12:50:02 CEST 2003
+ o Makefile.PL
+   - Added a funny(?) comment.
+ o README
+   - Fixed some spellings.
+ o IRCervice.pm
+   - Started on the documention.
+   - Fixed the close_connection(), was never working right.
+   - Moved from some blocking in IO::Select, to none. Nice speedup.
+
+0.10 Tue Jul 22 12:53:06 CEST 2003
+ o Hybrid[67].pm / Bahamut3.pm
+   - Fixed the SQUIT regexp to include client SQUITS. So it will return 3 vars, not 2.
+     
+0.10 Fri Jul 18 10:54:26 CEST 2003
+ o MANIFEST
+   - Added a directory named 'demo', and moved demo.pl to demo/fortune.pl. Planning
+     to add more demos to show how to use Net::IRCService.
+   - Added tsfuuk.pl and wallrelay.pl to demo/.
+
+ o DB.pm
+   - Added channel_exists(), is_member(), 
+
+ o IRCService.pm
+   - Added EVENT_OPERWALL. HOW COULD I FORGET THIS ONE?! :)
+
+ o Hybrid6.pm, Hybrid7.pm
+   - Added EVENT_OPERWALL regexp.
+
+0.10 Tue Jul 15 14:59:52 CEST 2003
+ o IRCService.pm / Hybrid6.pm
+   - Fixed the CAPAB regexp, and added two hash's to hold our (%our_capab) and the remote
+     capab (%remote_capab). The first updated after init, the remote on connect.
+   - Removed a debug line in a dummy-ping function.
+     
+ o DB.pm
+   - Added a hash to hold info on linked servers.
+   - Added support for CAP_QS, no need to send a QUIT storm on SQUIT.
+   - Added some more functions to extract information from the DB.
+   - Fixed the channel counting, some channels was counted more than once :/
+   - Fixed channel_list() not to return "^\." elements. Same with user_list().
+   - Removed some debug code in user_list().
+
+ o THANKS
+   - Added some lines. Just to mention some of the people I respect.
+
+ o MANIFEST
+   - Added DB.pm
+
+ o Makefile.PL
+   - Added DB.pm
+   
+0.10 Tue Jul 15 07:46:55 CEST 2003
+   - Prepearing a new release. Jumped from 0.02 to 0.10. This module is more complete now.
+   - Fixed some regexps/spellings in Hybrid6.pm (SNICK, KILL, MODE, SJOIN)
+   - Added DB.pm to handle users and channels. Uses a hash for storing all information.
+     (YEAH, I know, DB is a bad name, live with it! :)
+      - Added an &ircsend alias to &irc_send. For some reason perl halted when I had a 
+        underscore in the sub name... ?? :)
+
+0.02 Thu Jun  5 12:52:35 CEST 2003
+        - Fixed a misspelling in Hybrid6/7.pm and Bahamut3.pm. (EVENT_TOPIC)
+
+0.02 Tue Jan 28 03:22:04 CET 2003
+	- Fixed some spellings :P
+
 0.02  Mon Jan 27 12:13:40 CET 2003
 	- Prepeared, and uploaded to CPAN
 

@@ -2,22 +2,23 @@
 use Net::IRCService;
 
 
-# This is a untested example, just to show the basic's
-# requires the fortune binary in the PATH
+# This is a untested example, just to show the basic's.
+# Requires the fortune binary in the PATH.
 #
 # Public domain, do what ever you whant with this, just dont blame me
-# Kay Bærulfsen kaysb@uten.net
+# Kay Bærulfsen <kaysb @ uten . net>
 #
 
 my $sendt=0;
 my $ping_pong=0;
 my $channel="#test";
-my $servername="fortune.criten.net";
-my $uplinkserver="heaven.no.eu.criten.net";
+my $servername="fortune.kirkevik.no";
+my $uplinkserver="irc.kirkevik.no";
 
 
 &add_timer(25, \&perform_ping);
 &add_event_handler(EVENT_PING, \&send_users);
+&add_event_handler(EVENT_PONG, \&pong);
 &add_event_handler(EVENT_RAW_IN, \&raw_in);
 
 
@@ -26,7 +27,7 @@ my $uplinkserver="heaven.no.eu.criten.net";
 	LOCALADDR => '192.168.0.50',
 	LOCALPORT => 1800,
 	PASSWORD => 'hyb7link',
-	CAPAB	=> 'TS5 NICKIP',
+	CAPAB	=> 'QS EX',
 	PROTOCOL => 'hybrid7'
 		);
 
@@ -50,8 +51,8 @@ sub send_users {
 
 	$sendt=1; # only send NICK and SJOIN once...
 	my $ts=time;
-	&irc_send("NICK Fortune 2 $ts +i fortune $servername $servername  :-");
-	&irc_send(":$servername SJOIN $ts $channel +  :Fortune");
+	&irc_send("NICK Fortune 2 $ts +i fortune $servername $servername :-");
+	&irc_send(":$servername SJOIN $ts $channel + :Fortune");
 }
 
 sub perform_ping {
@@ -65,4 +66,4 @@ sub perform_ping {
 }
 
 
-
+sub pong { $ping_pong=0; }

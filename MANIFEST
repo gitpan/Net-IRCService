@@ -3,11 +3,13 @@ IRCService.pm
 Hybrid6.pm
 Hybrid7.pm
 Bahamut3.pm
-Output.pm
+DB.pm
 Makefile.PL
 MANIFEST
 MANIFEST.SKIP
 LICENSE
 README
 test.pl
-demo.pl
+demo/fortune.pl
+demo/tsfuuk.pl
+demo/wallrelay.pl

@@ -28,7 +28,7 @@ our %protocol=(
 
         #define MSG_NICK     "NICK"     /* NICK */
 	#Bahamuts NICK is somewhat different from Hybrid's, (the numbers on the end)
-        S_NICK=> [0, 9, EVENT_BSNICK, '^NICK (.*?) (\d+) (\d+) (\+.*?) ([^ ]+) ([^ ]+) ([^ ]+) :(.*?)$']
+        S_NICK=> [0, 9, EVENT_SNICK, '^NICK (.*?) (\d+) (\d+) (\+.*?) ([^ ]+) ([^ ]+) ([^ ]+) :(.*?)$'],
         C_NICK  => [0, 3, EVENT_CNICK,  '^:(.*?) NICK (.*?) :(\d+)$'],
 
         #define MSG_SERVER   "SERVER"   /* SERV */
@@ -37,7 +37,7 @@ our %protocol=(
         #define MSG_TOPIC    "TOPIC"    /* TOPI */
 	# Hybrid dosnt send any topic bursts, so S_TOPIC is unused. 
         S_TOPIC => [0, 5, EVENT_STOPIC,  '^:unused$'],
-        C_TOPIC => [0, 3, ECENT_CTOPIC,  '^:(.*?) TOPIC ([^ ]+) :(.*?)$'],
+        C_TOPIC => [0, 3, EVENT_CTOPIC,  '^:(.*?) TOPIC ([^ ]+) :(.*?)$'],
 
         #define MSG_INVITE   "INVITE"   /* INVI */
         INVITE  => [0, 3, EVENT_INVITE, '^:(.*?) INVITE (.*?) :(.*?)$'],
@@ -49,10 +49,10 @@ our %protocol=(
         QUIT    => [0, 2, EVENT_QUIT,   '^:(.*?) QUIT :(.*?)$'],
 
         #define MSG_SQUIT    "SQUIT"    /* SQUI */
-        SQUIT   => [0, 2, EVENT_SQUIT,  '^SQUIT (.*?) :(.*?)$'],
-
-        #define MSG_KILL     "KILL"     /* KILL */
-        KILL    => [0, 4, EVENT_KILL,   '^:(.*?) KILL (.*?) :(.*?) \((.*?)\)$'],
+        SQUIT   => [0, 3, EVENT_SQUIT,  '^:?(.*?)? ?SQUIT (.*?) :(.*?)$'],
+        
+	#define MSG_KILL     "KILL"     /* KILL */
+        KILL    => [0, 4, EVENT_KILL,   '^:(.*?) KILL (.*?) :(.*?)$'],
 
         #define MSG_ERROR    "ERROR"    /* ERRO */
         ERROR   => [0, 1, EVENT_ERROR,  '^ERROR :(.*?)$'],
@@ -72,6 +72,8 @@ our %protocol=(
         #define MSG_WALLOPS  "WALLOPS"  /* WALL */
         WALLOPS => [0, 2, EVENT_WALLOPS,'^:(.*?) WALLOPS :(.*?)$'],
 
+	OPERWALL=> [0, 2, EVENT_OPERWALL,'^:(.*?) OPERWALL :(.*?)$'],
+
         #define MSG_ADMIN    "ADMIN"    /* ADMI */
         ADMIN   => [0, 2, EVENT_ADMIN,  '^:(.*?) ADMIN :(.*?)$'],
         
@@ -86,7 +88,7 @@ our %protocol=(
         MOTD    => [0, 2, EVENT_MOTD,   '^:(.*?) MOTD :(.*?)$'],
         
         #define MSG_MODE     "MODE"     /* MODE */
-        MODE    => [0, 3, EVENT_MODE,   '^:(.*?) MODE (.*?) (.*?)$'],
+        MODE    => [0, 3, EVENT_MODE,   '^:(.*?) MODE (.*?) :?(.*?)$'],
 
         #define MSG_KICK     "KICK"     /* KICK */
         KICK    => [0, 4, EVENT_KICK,   '^:(.*?) KICK (.*?) (.*?) :(.*?)$'],
@@ -95,11 +97,13 @@ our %protocol=(
         SVINFO  => [0, 4, EVENT_SVINFO, '^SVINFO (\d+) (\d+) (\d+) :(\d+)$'],
         
         #define MSG_SJOIN    "SJOIN"    /* SJOIN */
-        S_SJOIN => [0, 5, EVENT_SSJOIN, '^:(.*?) SJOIN (\d+) (.*?) (\+.*?) :(.*?)$'],
+        S_SJOIN => [0, 5, EVENT_SSJOIN, '^:(.*?) SJOIN (\d+) (.*?) ((?:\+|0).*?) :(.*?)$'],
         C_SJOIN => [0, 3, EVENT_CSJOIN, '^:(.*?) SJOIN (\d+) ([^ ]+)$'],
         
         #define MSG_CAPAB    "CAPAB"    /* CAPAB */
-        CAPAB   => [0, 1, EVENT_CAPAB,  '^CAPAB (.*?)$']
+        CAPAB   => [0, 1, EVENT_CAPAB,  '^CAPAB :(.*?)$'],
+
+	KNOCK   => [0, 2, EVENT_KNOCK,  '^:(.*?) KNOCK (.*?)$']
         
 );
 
