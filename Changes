@@ -1,0 +1,9 @@
+Revision history for Perl extension Net::IRCService.
+
+0.02  Mon Jan 27 12:13:40 CET 2003
+	- Prepeared, and uploaded to CPAN
+
+0.01  Fri Sep  6 18:10:15 2002
+	- original version; created by h2xs 1.21 with options
+		-XA -n Net::IRCService
+

@@ -1,0 +1,86 @@
+Net/IRCService version 0.02
+============================
+
+
+Net::IRCService is suposed to be a easy interface to create more or
+less usefull IRC-Services. If you have worked with Net::IRC before, 
+you will fast get to grip on how this module works. It has -almost- the
+same event-driven interface. It lets you add one or more event handlers
+to EVENTS seen by the module. 
+
+This module is first of all made for personal use, but it would be fun
+to see if anyone else would get any fun out of this module. But, be aware,
+this is the first and initial release, and its not tested too much.
+Im sure there are some bugs yet to be found, so please dont put it right
+in to a production network without testing it first.
+
+This module was devloped out from my experience from hybrid6/7 and
+bahamut, and is know to work (atlast connect to, and stay connected when
+idle) with following versions:
+
+	o ircd-hybrid-6.3.1
+	o ircd-hybrid-7rc8
+	o bahamut-1.4.33	
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make install
+
+DEPENDENCIES
+
+This module requires these other modules and libraries:
+
+	o POSIX
+	o IO::Select
+	o IO::Socket
+	o Socket
+	o Fcntl
+		(All found in the standard perl suit)
+
+BUGS
+
+If you find any bugs, please send a mail to me about it. If you know how 
+to fix it, send me a patch.
+
+If you want to add support for any other ircd, please do so. I dont think
+I will add any other protocols unless -I- need it.
+
+TODO
+
+	o Add some kind of user/cannel/server handling. 
+
+		o HasOp(channel, nick)
+		o IsOper(nick)
+		o ChanMembers(channel)
+
+		  ... and so on.
+
+	o Make some tools to make life abit easyer;
+
+		o Give(Op|Voice), Take(Op|Voice), nickmode, chanmode, settopic, add/delban
+		o ForbidChannel, ForbidNickname, CloseChannel, ClearChannel, and so on
+		o Database interface (DBI to mysql, posgres, oracle, DBD) ?
+		o DCC module
+		o Command handling. (Commands from users on IRC ??troh?? PRIVMSG or NOTICE)
+
+
+DISCLAMER
+
+Yes, I know, my english sucks. :) But, Im doing my werry best, so I really
+dont care. (I think you will understand everything if you try). Feel free
+to correct my mnglish and send your version to me.
+
+
+COPYRIGHT AND LICENCE
+
+ © Copyright (C) 2002 Kay Sindre Baerulfsen
+
+This library is free software; you can redistribute it and/or modify
+it under the GNU General Public License (Version 2, June 1991)
+                            
+Share and Enjoy!
+
