@@ -62,7 +62,7 @@ our @EXPORT = qw(
 	EVENT_CNICK
 	EVENT_SERVER
 	EVENT_STOPIC
-	EVENT_COPIC
+	EVENT_CTOPIC
 	EVENT_INVITE
 	EVENT_VERSION
 	EVENT_QUIT
@@ -113,7 +113,7 @@ our @EXPORT = qw(
 
 );
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 # Preloaded methods go here.
 
@@ -343,7 +343,11 @@ sub irc_send_now {
 	while (length($data)) {
 		foreach $socket ($select->can_write(0)) {
 			while (length($data)>0) {
-				$rv = $socket->send($data, 0);	
+				if (!($rv = $socket->send($data, 0))) {
+					&send_event(EVENT_INT_ERROR, "I was told i coud write.. :(");
+					$STOP_SIGNAL=0;
+					return 0;
+				}
 				substr($data,0,$rv)='';
 			}	
 		}

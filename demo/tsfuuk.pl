@@ -15,7 +15,7 @@ my $server = 'tsfuuk.services.eu';
 my $snick = 'TSFuuk';
 &init_service(
    SERVER_NAME => $server,
-   LOCALADDR => '192.168.1.100',
+   LOCALADDR => '127.0.0.1',
    LOCALPORT => 1800,
    PASSWORD => 'link',
    CAPAB   => 'QS',
@@ -46,7 +46,7 @@ sub event_privmsg {
 	    
 	    my $channel = $1;
 	    
-	    if ($irc->channel_exists($channel) {
+	    if ($irc->channel_exists($channel)) {
 	       
 	       if (!$irc->is_member($from, $channel)) {
 		  

@@ -24,7 +24,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 my (%users, %channels, %servers);
 
@@ -96,7 +96,7 @@ sub _event_kick {
 }
 
 sub _event_kill {
-   my ($from, $target, $reason) = @_;
+   my ($from, $target, $code, $reason) = @_;
    &_event_quit($target, "Killed: $reason");
 }
 
@@ -118,6 +118,7 @@ sub _event_sjoin {
 
       my $op = ($lc_nick =~ s/\@// ? 1 : 0);
       my $voice = ($lc_nick =~ s/\+// ? 1 : 0);
+      my $halfop = ($lc_nick =~ s/\%// ? 1 : 0);
 	 
       # Første bokstaven i et nick er en bokstav, sørg for at det ikke er noe fremmedlegmer før det.
       # (Remove modes that I dont understand. (A nick starts with a alphachar))
@@ -126,7 +127,7 @@ sub _event_sjoin {
       $channels{"$lc_chan"}{'users'}{"$lc_nick"}{'op'}= $op;
       $channels{"$lc_chan"}{'users'}{"$lc_nick"}{'voice'}= $voice;
 
-      $users{"$lc_nick"}{'channels'}{"$lc_chan"}=($op?'@':'').($voice?'+':'');
+      $users{"$lc_nick"}{'channels'}{"$lc_chan"}=($op?'@':'').($voice?'+':'').($halfop?'%':'');
    }
 
    return if ($mode eq '0');
@@ -239,6 +240,9 @@ sub _event_mode {
 	    } elsif (/v/) {
 	       my ($lc_nick, $lc_chan) = (_lc(shift @items), lc($target));
 	       $channels{"$lc_chan"}{'users'}{"$lc_nick"}{'voice'}=1;
+            } elsif (/h/) {
+               my ($lc_nick, $lc_chan) = (_lc(shift @items), lc($target));
+               $channels{"$lc_chan"}{'users'}{"$lc_nick"}{'halfop'}=1;
 	    } elsif (/l/) {
 	       my $lc_chan = lc($target);
 	       $channels{"$lc_chan"}{'limit'}=shift @items;
@@ -265,6 +269,11 @@ sub _event_mode {
 	       if (exists($channels{"$lc_chan"}{'users'}{"$lc_nick"}{'voice'})) {
 		  delete($channels{"$lc_chan"}{'users'}{"$lc_nick"}{'voice'});
 	       }
+            } elsif (/h/) {
+               my ($lc_nick, $lc_chan) = (_lc(shift @items), lc($target));
+               if (exists($channels{"$lc_chan"}{'users'}{"$lc_nick"}{'halfop'})) {
+                  delete($channels{"$lc_chan"}{'users'}{"$lc_nick"}{'halfop'});
+               }
 	    } elsif (/l/) {
 	       my $lc_chan = lc($target);
 	       if (exists($channels{"$lc_chan"}{'limit'})) {
@@ -413,6 +422,14 @@ sub has_voice {
    my $lc_chan = lc(shift);
    return $channels{"$lc_chan"}{'users'}{"$lc_nick"}{'voice'};
 }
+
+sub has_halfop {
+   my $self = shift;
+   my $lc_nick = _lc(shift);
+   my $lc_chan = lc(shift);
+   return $channels{"$lc_chan"}{'users'}{"$lc_nick"}{'halfop'};
+}
+
 	    
 sub channel_list {
    my $self = shift;
@@ -470,6 +487,7 @@ sub channel_set_ts {
    foreach (keys %{ $channels{"$lc_chan"}{'users'} }) {
       $channels{"$lc_chan"}{'users'}{"$_"}{'op'} = 0;
       $channels{"$lc_chan"}{'users'}{"$_"}{'voice'} = 0;
+      $channels{"$lc_chan"}{'users'}{"$_"}{'halfop'} = 0;
    }
 
    foreach (keys %{ $channels{"$lc_chan"}{'bans'} }) {
@@ -504,8 +522,14 @@ sub channel_get_users {
 
 sub kill {
    my ($self, $from, $nick, $reason) = @_;
-   &Net::IRCService::ircsend(":$from KILL $nick :$reason");
-   &_event_kill($nick, $reason);
+   my $lc_from  = _lc($from);
+   my $serv     = $users{$lc_from}{'server'};
+   my $host     = $users{$lc_from}{'host'};
+   my $ident    = $users{$lc_from}{'ident'};
+   my $code = join '!', $serv, $host, $ident, $from;
+
+   &Net::IRCService::ircsend(":$from KILL $nick :$code ($reason)");
+   &_event_kill($from, $nick, undef, $reason);
 }
 
 sub kick {
@@ -553,6 +577,18 @@ sub deop {
    my ($self, $from, $channel) = (shift, shift, shift);
    my @nicks = @_;
    &_multimodes($from, $channel, '-o', @nicks);
+}
+
+sub halfop {
+   my ($self, $from, $channel) = (shift, shift, shift);
+   my @nicks = @_;
+   &_multimodes($from, $channel, '+h', @nicks);
+}
+ 
+sub dehalfop {
+   my ($self, $from, $channel) = (shift, shift, shift);
+   my @nicks = @_;  
+   &_multimodes($from, $channel, '-h', @nicks);
 }
 
 sub voice {

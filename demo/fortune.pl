@@ -24,7 +24,7 @@ my $uplinkserver="irc.kirkevik.no";
 
 &init_service(
 	SERVER_NAME => $servername,
-	LOCALADDR => '192.168.0.50',
+	LOCALADDR => '127.0.0.1',
 	LOCALPORT => 1800,
 	PASSWORD => 'hyb7link',
 	CAPAB	=> 'QS EX',

@@ -1,4 +1,4 @@
-Net/IRCService version 0.12
+Net/IRCService version 0.13
 ============================
 
 
@@ -52,8 +52,8 @@ If you find any bugs, please use RT to report it. If you know how
 to fix it, send me a patch.
 
 If you want to add support for any other ircd, please do so. I dont think
-I will add any other protocols unless -I- need it. (Nextthing to do here
-is to add support for ircd-ratbox, a hybrid-clone. http://www.ircd-ratbox.org
+I will add any other protocols unless -I- need it. (Next thing to do here
+is to add support for ircd-ratbox, a hybrid-clone. http://www.ircd-ratbox.org)
 
 
 TODO

@@ -1,5 +1,19 @@
 Revision history for Perl extension Net::IRCService.
 
+
+0.13 Sun Jan 18 15:27:02 CET 2004
+ o README
+   - Spelling
+
+ o DB.pm
+   - Added a patch submited by Jonas Liljegren fixing some kill issues with KILL. 
+     I think I need to take another look at it some time later.
+   - Added halfop support with a patch from Jonas Liljegren.
+ o IRCService.pm
+   - Fixed a spelling error in theEXPORT part; EVENT_COPIC to EVENT_CTOPIC. 
+     Thanks Jonas (again!) :)
+   - Fixed a bug in send_raw_now(), reported by Jonas Liljegren.
+
 0.12 Fri Sep 26 16:28:09 CEST 2003
 
  o DB.pm
