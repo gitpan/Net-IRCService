@@ -9,6 +9,7 @@ MANIFEST
 MANIFEST.SKIP
 LICENSE
 README
+THANKS
 test.pl
 demo/fortune.pl
 demo/tsfuuk.pl

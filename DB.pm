@@ -24,7 +24,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 my (%users, %channels, %servers);
 
@@ -437,7 +437,7 @@ sub key {
 
 sub limit {
    my ($self, $channel, $from, $limit) = @_;
-   $lc_chan = lc($lc_chan);
+   my $lc_chan = lc($channel);
    if (defined($limit)) {
       $channels{"$lc_chan"}{'limit'}=$limit;
       &Net::IRCService::ircsend(":$from MODE $lc_chan +l $limit");
@@ -445,12 +445,12 @@ sub limit {
    return $channels{"$lc_chan"}{'limit'};
 }
 
-sub mode {
-   my $self=shift;
-   my $channel = shift;
-   my $from = shift;
-   my $mode = shift;
-   my $modes = @_;
+#sub mode {
+#   my $self=shift;
+#   my $channel = shift;
+#   my $from = shift;
+#   my $mode = shift;
+#   my $modes = @_;
 
 sub channel_get_ts {
    my $self = shift;

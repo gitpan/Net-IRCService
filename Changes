@@ -1,5 +1,12 @@
 Revision history for Perl extension Net::IRCService.
 
+0.12 Fri Sep 26 16:28:09 CEST 2003
+
+ o DB.pm
+   - GAH! Im so stupid. Repeat after me Kay: "Dont release buggy code!"
+ o MANIFEST
+   - Added THANKS to the list.
+
 0.11 Wed Sep 24 13:03:17 CEST 2003
 
  o IRCService.pm
